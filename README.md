@@ -1,3 +1,4 @@
+<img width="528" alt="intern 2" src="https://github.com/user-attachments/assets/cb1ccc18-fa92-4a24-944f-94308a5a6e7c" />
 name: rithigha
 intern id:CT08DS276
 Topic:Sentiment Analysis Using Natural Language Processing (NLP)
