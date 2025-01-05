@@ -1,0 +1,75 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+# Load the dataset
+def load_data(file_path):
+    data = pd.read_csv(file_path)
+    print(f"Data Shape: {data.shape}")
+    print(data.head())
+    return data
+
+# Preprocess the data
+def preprocess_data(data):
+    # Create a sentiment column based on Rating
+    data = data[(data['Rating'] != 3)]  # Remove neutral ratings
+    data['sentiment'] = data['Rating'].apply(lambda x: 1 if x > 3 else 0)  # Positive: 1, Negative: 0
+    data['Review'] = data['Review'].str.lower().str.replace(r"[^a-zA-Z\s]", "", regex=True)
+    print(f"Processed Data Sample:\n{data[['Review', 'sentiment']].head()}")
+    return data[['Review', 'sentiment']]
+
+# Visualize the data
+def visualize_data(data):
+    sns.countplot(x='sentiment', data=data)
+    plt.title("Sentiment Distribution")
+    plt.show()
+
+# Split the data
+def split_data(data):
+    X = data['Review']
+    y = data['sentiment']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    print(f"Train size: {len(X_train)}, Test size: {len(X_test)}")
+    return X_train, X_test, y_train, y_test
+
+# Vectorize the text data
+def vectorize_data(X_train, X_test):
+    vectorizer = TfidfVectorizer()
+    X_train_vec = vectorizer.fit_transform(X_train)
+    X_test_vec = vectorizer.transform(X_test)
+    print(f"Feature Count: {len(vectorizer.get_feature_names_out())}")
+    return X_train_vec, X_test_vec, vectorizer
+
+# Build and train the model
+def train_model(X_train_vec, y_train):
+    model = MultinomialNB()
+    model.fit(X_train_vec, y_train)
+    return model
+
+# Evaluate the model
+def evaluate_model(model, X_test_vec, y_test):
+    y_pred = model.predict(X_test_vec)
+    print("Classification Report:\n", classification_report(y_test, y_pred))
+    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print("Accuracy Score:", accuracy_score(y_test, y_pred))
+    return y_pred
+
+# Main Function
+def main():
+    file_path = "/content/amazon Food Reviews 100k Dataset.csv"  # Dataset file path
+
+    data = load_data(file_path)
+    data = preprocess_data(data)
+    visualize_data(data)
+    X_train, X_test, y_train, y_test = split_data(data)
+    X_train_vec, X_test_vec, vectorizer = vectorize_data(X_train, X_test)
+    model = train_model(X_train_vec, y_train)
+    evaluate_model(model, X_test_vec, y_test)
+
+if __name__ == "__main__":
+    main()
